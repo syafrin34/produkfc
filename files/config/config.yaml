@@ -1,10 +1,10 @@
 app:
-  port: 8881
+  port: 8080
 database:
   host: localhost
-  user: admin
-  password: password
-  name: product
+  user: postgres
+  password: postgres
+  name: mproduk
   port: 5342
 redis:
   host: 127.0.0.1
