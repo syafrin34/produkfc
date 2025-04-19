@@ -1,0 +1,12 @@
+app:
+  port: 8881
+database:
+  host: localhost
+  user: admin
+  password: password
+  name: product
+  port: 5342
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: 
