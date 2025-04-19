@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"produkfc/cmd/config"
+	"produkfc/config"
 
 	"github.com/redis/go-redis/v9"
 )

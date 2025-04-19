@@ -3,7 +3,7 @@ package resource
 import (
 	"fmt"
 	"log"
-	"produkfc/cmd/config"
+	"produkfc/config"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

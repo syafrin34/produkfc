@@ -5,7 +5,7 @@ database:
   user: postgres
   password: postgres
   name: mproduk
-  port: 5342
+  port: 5432
 redis:
   host: 127.0.0.1
   port: 6379
