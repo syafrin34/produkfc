@@ -20,6 +20,110 @@ func NewProductHandler(pu usecase.ProductUsecase) *ProductHandler {
 		ProductUseCase: pu,
 	}
 }
+
+func (h *ProductHandler) ProductManagement(c *gin.Context) {
+	var param = models.ProductParam{}
+	if err := c.ShouldBindJSON(&param); err != nil {
+		logger.Logger.Error(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error message": "invalid request",
+		})
+		return
+	}
+
+	if param.Action == "" {
+		logger.Logger.Error("missing parameter action")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error message": "missing required parameter",
+		})
+		return
+	}
+
+	switch param.Action {
+	case "add":
+		if param.ID != 0 {
+			logger.Logger.WithFields(logrus.Fields{
+				"param": param,
+			}).Error("invalid request - product category id is not empty")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error message": "Invalid Request",
+			})
+			return
+		}
+		productID, err := h.ProductUseCase.CreateNewProduct(c.Request.Context(), &param.Product)
+		if err != nil {
+			logger.Logger.WithFields(
+				logrus.Fields{
+					"param": param,
+				}).Errorf("h.Product.CreateNewProduct got error %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error message": "err",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("Succesfully create new product %d", productID),
+		})
+		return
+	case "edit":
+		if param.ID == 0 {
+			logger.Logger.WithFields(logrus.Fields{
+				"param": param,
+			}).Error("invalid request - product id is empty")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error message": "Invalid Request",
+			})
+			return
+		}
+		product, err := h.ProductUseCase.EditProduct(c.Request.Context(), &param.Product)
+		if err != nil {
+			logger.Logger.WithFields(logrus.Fields{
+				"param": param,
+			}).Errorf("h.ProductUseCase.EditProduct got error %v ", err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error message": err,
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Successfully updated product",
+			"product": product,
+		})
+		return
+
+	case "delete":
+		if param.ID == 0 {
+			logger.Logger.WithFields(logrus.Fields{
+				"param": param,
+			}).Error("invalid request - product id is empty")
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error message": "Invalid Request",
+			})
+			return
+		}
+		err := h.ProductUseCase.DeleteProduct(c.Request.Context(), param.ID)
+		if err != nil {
+			logger.Logger.WithFields(logrus.Fields{
+				"param": param,
+			}).Errorf("h.ProductUseCaseDeleteProduct gor error %v ", err)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": fmt.Sprintf("Product %d successfully deleted", param.ID),
+		})
+		return
+
+	default:
+		logger.Logger.Errorf("Invalid action: %s", param.Action)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error_message": "Invalid Action",
+		})
+		return
+
+	}
+
+}
 func (h *ProductHandler) ProductCategoryManagement(c *gin.Context) {
 	var param models.ProductCategoryParam
 	if err := c.ShouldBindJSON(&param); err != nil {

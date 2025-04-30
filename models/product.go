@@ -18,3 +18,8 @@ type ProductCategoryParam struct {
 	Action string `json:"action"`
 	ProductCategory
 }
+
+type ProductParam struct {
+	Action string `json:"action"`
+	Product
+}
