@@ -6,6 +6,7 @@ import (
 	"produkfc/cmd/product/usecase"
 	"produkfc/infrastructure/logger"
 	"produkfc/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -19,6 +20,79 @@ func NewProductHandler(pu usecase.ProductUsecase) *ProductHandler {
 	return &ProductHandler{
 		ProductUseCase: pu,
 	}
+}
+
+func (h *ProductHandler) GetProductInfo(c *gin.Context) {
+	param := c.Param("id")
+	productID, err := strconv.ParseInt(param, 10, 64)
+	if err != nil {
+		logger.Logger.WithFields(logrus.Fields{
+			"product id ": productID,
+		}).Errorf("strconv.parse.int got error %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error message": "invalid product id",
+		})
+		return
+	}
+	product, err := h.ProductUseCase.GetProductByID(c.Request.Context(), productID)
+	if err != nil {
+		logger.Logger.WithFields(logrus.Fields{
+			"product id ": productID,
+		}).Errorf("h.ProductUseCase.GetProductBy ID got errror %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error message": err,
+		})
+		return
+	}
+	if product.ID == 0 {
+		logger.Logger.WithFields(logrus.Fields{
+			"product category id": productID,
+		}).Info("Product not found")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error message": "productnot exists",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"product": product,
+	})
+
+}
+func (h *ProductHandler) GetProductCategoryInfo(c *gin.Context) {
+	param := c.Param("id")
+	productCategoryID, err := strconv.ParseInt(param, 10, 64)
+	if err != nil {
+		logger.Logger.WithFields(logrus.Fields{
+			"product category id ": productCategoryID,
+		}).Errorf("strconv.parse.int got error %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error message": "invalid product category id",
+		})
+		return
+	}
+	productCategory, err := h.ProductUseCase.GetProductCategoryByID(c.Request.Context(), productCategoryID)
+	if err != nil {
+		logger.Logger.WithFields(logrus.Fields{
+			"product id ": productCategoryID,
+		}).Errorf("h.ProductUseCase.GetProductCategoryByID got errror %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error message": err,
+		})
+		return
+	}
+	if productCategory.ID == 0 {
+		logger.Logger.WithFields(logrus.Fields{
+			"product category id": productCategoryID,
+		}).Info("Product category not found")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error message": "product category not exists",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"product": productCategory,
+	})
+
 }
 
 func (h *ProductHandler) ProductManagement(c *gin.Context) {
@@ -64,7 +138,7 @@ func (h *ProductHandler) ProductManagement(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": fmt.Sprintf("Succesfully create new product %d", productID),
 		})
-		return
+
 	case "edit":
 		if param.ID == 0 {
 			logger.Logger.WithFields(logrus.Fields{
@@ -89,7 +163,6 @@ func (h *ProductHandler) ProductManagement(c *gin.Context) {
 			"message": "Successfully updated product",
 			"product": product,
 		})
-		return
 
 	case "delete":
 		if param.ID == 0 {
@@ -112,14 +185,12 @@ func (h *ProductHandler) ProductManagement(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": fmt.Sprintf("Product %d successfully deleted", param.ID),
 		})
-		return
 
 	default:
 		logger.Logger.Errorf("Invalid action: %s", param.Action)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error_message": "Invalid Action",
 		})
-		return
 
 	}
 
