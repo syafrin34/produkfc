@@ -3,7 +3,10 @@ package service
 import (
 	"context"
 	"produkfc/cmd/product/repository"
+	"produkfc/infrastructure/logger"
 	"produkfc/models"
+
+	"github.com/sirupsen/logrus"
 )
 
 type ProductService struct {
@@ -17,10 +20,33 @@ func NewProductService(p repository.ProductRepository) *ProductService {
 }
 
 func (s *ProductService) GetProductByID(ctx context.Context, productID int64) (*models.Product, error) {
-	product, err := s.ProductRepository.FindProductByID(ctx, productID)
+	//get from redis
+	product, err := s.ProductRepository.GetProductByIDFromRedis(ctx, productID)
+	if err != nil {
+		logger.Logger.WithFields(logrus.Fields{
+			"productID": productID,
+		}).Errorf("s.ProductRepository.GetProductByIDFromRedis got error %v", err)
+	}
+
+	if product.ID != 0 {
+		return product, nil
+	}
+	//get from db
+	product, err = s.ProductRepository.FindProductByID(ctx, productID)
 	if err != nil {
 		return nil, err
 	}
+
+	//concurrent go routine
+	ctxConcurrent := context.WithValue(ctx, context.Background(), ctx.Value("request_id"))
+	go func(ctx context.Context, product *models.Product, productID int64) {
+		errConcurrent := s.ProductRepository.SetProductByID(ctx, product, productID)
+		if errConcurrent != nil {
+			logger.Logger.WithFields(logrus.Fields{
+				"product": product,
+			}).Errorf("s.ProductRepository.SetProductByID got error %v", errConcurrent)
+		}
+	}(ctxConcurrent, product, productID)
 	return product, nil
 }
 func (s *ProductService) GetProductCategoryByID(ctx context.Context, productCategoryID int64) (*models.ProductCategory, error) {
