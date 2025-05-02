@@ -59,7 +59,7 @@ func (r *ProductRepository) SetProductByID(ctx context.Context, product *models.
 	if err != nil {
 		return err
 	}
-	err = r.Redis.SetEx(ctx, cacheKey, productJSON, 1*time.Minute).Err()
+	err = r.Redis.SetEx(ctx, cacheKey, productJSON, 5*time.Minute).Err()
 	if err != nil {
 		return err
 	}

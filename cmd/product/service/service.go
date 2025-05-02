@@ -28,7 +28,7 @@ func (s *ProductService) GetProductByID(ctx context.Context, productID int64) (*
 		}).Errorf("s.ProductRepository.GetProductByIDFromRedis got error %v", err)
 	}
 
-	if product.ID != 0 {
+	if product != nil && product.ID != 0 {
 		return product, nil
 	}
 	//get from db
@@ -38,7 +38,10 @@ func (s *ProductService) GetProductByID(ctx context.Context, productID int64) (*
 	}
 
 	//concurrent go routine
-	ctxConcurrent := context.WithValue(ctx, context.Background(), ctx.Value("request_id"))
+	type contextKey string
+	const requestIDKey = contextKey("request_id")
+	//ctxConcurrent := context.WithValue(ctx, context.Background(), ctx.Value("request_id"))
+	ctxConcurrent := context.WithValue(ctx, requestIDKey, ctx.Value(requestIDKey))
 	go func(ctx context.Context, product *models.Product, productID int64) {
 		errConcurrent := s.ProductRepository.SetProductByID(ctx, product, productID)
 		if errConcurrent != nil {
