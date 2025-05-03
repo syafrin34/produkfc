@@ -102,3 +102,11 @@ func (s *ProductService) DeleteProductCategory(ctx context.Context, productCateg
 	}
 	return nil
 }
+
+func (s *ProductService) SearchProduct(ctx context.Context, param models.SearchProductParameter) ([]models.Product, int, error) {
+	product, totalCount, err := s.ProductRepository.SearchProduct(ctx, param)
+	if err != nil {
+		return nil, 0, err
+	}
+	return product, totalCount, nil
+}

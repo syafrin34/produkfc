@@ -84,14 +84,14 @@ func (r *ProductRepository) SearchProduct(ctx context.Context, param models.Sear
 	var products []models.Product
 	var totalCount int64
 	query := r.Database.WithContext(ctx).Table("product").
-		Select("product_id, product_name, product.description, product.price, product.stock,product.category_id, product_category.name AS category").
+		Select("product.id, product.name, product.description, product.price, product.stock,product.category_id, product_category.name AS category").
 		Joins("JOIN product_category ON product.category_id=product_category.id")
 	// filtering
 	if param.Name != "" {
 		query = query.Where("product.name ILIKE ?", "%"+param.Name+"%")
 	}
 	if param.Category != "" {
-		query = query.Where("product_categoty.name = ?", param.Category)
+		query = query.Where("product_category.name = ?", param.Category)
 	}
 	if param.MinPrice > 0 {
 		query = query.Where("product.price >= ?", param.MinPrice)

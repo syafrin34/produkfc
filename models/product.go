@@ -34,3 +34,11 @@ type SearchProductParameter struct {
 	OrderBy  string  `json:"orderBy"`
 	Sort     string  `json:"sort"`
 }
+type SearchProductResponse struct {
+	Products    []Product `json:"products"`
+	Page        int       `json:"page"`
+	PageSize    int       `json:"pagesize"`
+	TotalCount  int       `json:"totalCount"`
+	TotalPages  int       `json:"totalPages"`
+	NextPageUrl *string   `json:"nextPageUrl"`
+}
