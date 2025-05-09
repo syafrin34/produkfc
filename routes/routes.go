@@ -8,7 +8,7 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine, productHandler handler.ProductHandler) {
-	router.Use(middleware.REquestLogger())
+	router.Use(middleware.RequestLogger())
 	router.POST("/v1/product_category", productHandler.ProductCategoryManagement)
 	router.POST("/v1/product", productHandler.ProductManagement)
 

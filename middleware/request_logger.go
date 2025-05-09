@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func REquestLogger() gin.HandlerFunc {
+func RequestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestId := uuid.New().String()
 		timeoutCtx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
