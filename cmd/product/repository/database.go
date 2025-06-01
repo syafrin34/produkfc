@@ -125,3 +125,26 @@ func (r *ProductRepository) SearchProduct(ctx context.Context, param models.Sear
 	return products, int(totalCount), err
 
 }
+
+func (r *ProductRepository) DeductProductStockByProductID(ctx context.Context, productID int64, qty int) error {
+	err := r.Database.Table("product").WithContext(ctx).Model(&models.Product{}).
+		Updates(map[string]interface{}{
+			"stock": gorm.Expr("stock - %d", qty),
+		}).Where("id = ?", productID).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ProductRepository) AddProductStockByProductID(ctx context.Context, productID int64, qty int) error {
+	err := r.Database.Table("products").WithContext(ctx).Model(&models.Product{}).
+		Updates(map[string]interface{}{
+			"stock": gorm.Expr("stock + %d", qty),
+		}).Where("id = ? ", productID).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"produkfc/cmd/product/handler"
 	"produkfc/cmd/product/repository"
@@ -9,6 +10,7 @@ import (
 	"produkfc/cmd/product/usecase"
 	"produkfc/config"
 	"produkfc/infrastructure/logger"
+	"produkfc/kafka/consumer"
 	"produkfc/routes"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +28,13 @@ func main() {
 	productService := service.NewProductService(*productRepository)
 	productUseCase := usecase.NewProductUsecase(*productService)
 	productHandler := handler.NewProductHandler(*productUseCase)
+
+	kafkaProductUpdateStockConsumer := consumer.NewProductUpdateStockConsumer([]string{"localhost:9093"}, "stock.update", *productService)
+	kafkaProductUpdateStockConsumer.Start(context.Background())
+
+	kafkaProductRollbackStockConsumer := consumer.NewProductRollbackStockConsumer([]string{"localhost:9093"}, "stock.rollback", *productService)
+	kafkaProductRollbackStockConsumer.Start(context.Background())
+
 	port := cfg.App.Port
 	fmt.Print("load port = ", port)
 	router := gin.Default()
